@@ -110,16 +110,24 @@ def main() -> None:
 
     for epoch in range(start_epoch, args.epochs):
         print(f"\n=== Epoch {epoch + 1}/{args.epochs} ===")
+        # Same non-exact resume-position tradeoff as cbow/scripts/train.py,
+        # and the same fix: skip row *indices* before collation (an O(1)
+        # slice of a shuffled index list passed as `sampler=`), not "iterate
+        # the DataLoader and discard the first N batches" -- that still pays
+        # full collation cost per skipped batch with nothing to show for it
+        # (a real resume once stalled silently for ~80 minutes this way).
+        skip_batches = resume_batch_in_epoch if epoch == start_epoch else 0
+        indices = torch.randperm(len(dataset)).tolist()
+        if skip_batches:
+            skip_rows = skip_batches * args.rows_per_batch
+            indices = indices[skip_rows:]
+            print(f"  resuming mid-epoch: skipped {skip_batches:,} batches ({skip_rows:,} rows) instantly, no collation")
         loader = DataLoader(
-            dataset, batch_size=args.rows_per_batch, shuffle=True,
+            dataset, batch_size=args.rows_per_batch, sampler=indices,
             collate_fn=collator, drop_last=False,
         )
-        # Same non-exact resume-position tradeoff as cbow/scripts/train.py
-        # -- see its comment for why.
-        skip = resume_batch_in_epoch if epoch == start_epoch else 0
-        for batch_idx, batch in enumerate(loader):
-            if batch_idx < skip:
-                continue
+        for local_batch_idx, batch in enumerate(loader):
+            batch_idx = skip_batches + local_batch_idx
             if batch is None:
                 continue
             center_ids, context_ids, negative_ids = batch

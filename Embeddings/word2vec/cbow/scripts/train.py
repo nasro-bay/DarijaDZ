@@ -105,21 +105,34 @@ def main() -> None:
 
     for epoch in range(start_epoch, args.epochs):
         print(f"\n=== Epoch {epoch + 1}/{args.epochs} ===")
-        loader = DataLoader(
-            dataset, batch_size=args.rows_per_batch, shuffle=True,
-            collate_fn=collator, drop_last=False,
-        )
         # Resuming mid-epoch: DataLoader's shuffle isn't seeded per-epoch
         # the way word2vec_attention's ClusterBatchSampler is, so an exact
         # batch-index resume isn't reproducible here -- skip `resume_batch_
-        # in_epoch` batches of *rows* (cheap: no collation) to land roughly
-        # back where we left off instead. Good enough given each epoch is
-        # a fresh shuffle anyway; unlike word2vec_attention there's no
-        # cluster-order dependency to preserve exactly.
-        skip = resume_batch_in_epoch if epoch == start_epoch else 0
-        for batch_idx, batch in enumerate(loader):
-            if batch_idx < skip:
-                continue
+        # in_epoch` batches' worth of *row indices* before collation to land
+        # roughly back where we left off instead. Good enough given each
+        # epoch is a fresh shuffle anyway; unlike word2vec_attention there's
+        # no cluster-order dependency to preserve exactly.
+        #
+        # This must be a true index-level skip, not "iterate the DataLoader
+        # and discard the first N batches" -- that alternative (this
+        # project's original approach, until a real resume stalled with no
+        # GPU activity for ~80 minutes on a ~15k-batch skip) still pays the
+        # full collation cost (tokenization, subsampling, negative-sampling)
+        # for every skipped batch, it just throws the result away.
+        # torch.randperm + a plain index list passed as `sampler=` skips the
+        # already-consumed prefix as an O(1) slice instead.
+        skip_batches = resume_batch_in_epoch if epoch == start_epoch else 0
+        indices = torch.randperm(len(dataset)).tolist()
+        if skip_batches:
+            skip_rows = skip_batches * args.rows_per_batch
+            indices = indices[skip_rows:]
+            print(f"  resuming mid-epoch: skipped {skip_batches:,} batches ({skip_rows:,} rows) instantly, no collation")
+        loader = DataLoader(
+            dataset, batch_size=args.rows_per_batch, sampler=indices,
+            collate_fn=collator, drop_last=False,
+        )
+        for local_batch_idx, batch in enumerate(loader):
+            batch_idx = skip_batches + local_batch_idx
             if batch is None:
                 continue
             context_ids, attention_mask, center_ids, negative_ids = batch
