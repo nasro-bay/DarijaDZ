@@ -73,11 +73,14 @@ DJELFA_FILES = sorted((ROOT / "Mountada_djelfa_scrap" / "data" / "processed").gl
 YOUTUBE_FILES = sorted((ROOT / "Youtube_scrap" / "data" / "processed").glob("batch_*.jsonl"))
 
 # Total desired pool size per group (not "additional this run") -- extending
-# from the original 10k (1,500 / 2,834 / 2,833 / 2,833) to 20k, same
-# proportions doubled. main() figures out how many MORE rows each group
-# actually needs by subtracting what's already in OUT_PATH.
-DJELFA_TARGET = 3_000
-YOUTUBE_BUCKET_TARGETS = {"arabic": 5_668, "latin": 5_666, "mixed": 5_666}
+# from the original 10k (1,500 / 2,834 / 2,833 / 2,833) to 20k (3,000 /
+# 5,668 / 5,666 / 5,666), same proportions each time (15% djelfa, 85%
+# youtube split evenly across the three script buckets). Now extending
+# 20k -> 30k, same proportions (30,000 * 0.85 / 3 = 8,500 exactly, no
+# remainder to assign this time). main() figures out how many MORE rows
+# each group actually needs by subtracting what's already in OUT_PATH.
+DJELFA_TARGET = 4_500
+YOUTUBE_BUCKET_TARGETS = {"arabic": 8_500, "latin": 8_500, "mixed": 8_500}
 OVERSAMPLE_FACTOR = 1.3
 SEED = 42
 
