@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Darija LM — Next-Token Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+  <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="DarijaDZ">
+  <div>
+    <h1>Darija LM — Next-Token Explorer</h1>
+    <p class="subtitle">checkpoint {{ checkpoint_name }} (step {{ checkpoint_step }}) &middot; {{ vocab_size }}-word vocab</p>
+  </div>
+  <div class="flag-mark" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+      <path d="M14.5 3.5a8.5 8.5 0 1 0 0 17 8.7 8.7 0 0 1 0-17z"/>
+      <path d="m17.6 8.2.9 2.7h2.9l-2.3 1.7.9 2.7-2.4-1.7-2.3 1.7.9-2.7-2.4-1.7h2.9z"/>
+    </svg>
+  </div>
+</header>
+<div class="flag-strip"><span></span><span></span><span></span></div>
+
+<div class="panel">
+  <div class="input-card">
+    <textarea id="text" placeholder="ktb chi haja bi darija..." dir="auto"></textarea>
+    <div class="controls">
+      <label for="topk">top-k
+        <input id="topk" type="number" min="1" max="{{ max_top_k }}" value="{{ default_top_k }}">
+      </label>
+      <button class="predict-btn" id="predictBtn">Predict next word</button>
+    </div>
+    <div class="meta-note" id="note"></div>
+  </div>
+</div>
+
+<main class="results-grid" id="results"></main>
+<div class="empty-state" id="emptyState" style="display:none">
+  <p>No predictions to show.</p>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
