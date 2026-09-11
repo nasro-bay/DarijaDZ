@@ -20,27 +20,27 @@ def apply_madd_rules(word: str, index: int) -> list:
     if char == 'ي':
         # Case 1: Word-initial -> consonantal 'y' (e.g. يبارك -> ybarek)
         if index == 0:
-            return [("y", 0.95), ("i", 0.05)]
+            return [("y", 1.00)]
         # Case 2: Word-final -> vowel 'i' or 'y' (e.g. ربي, راني -> rabi, rani)
         if index == len(word) - 1:
             return [("i", 0.90), ("y", 0.10)]
         # Case 3: Medial between consonants -> long vowel 'i' or 'e' (e.g. دير -> dir)
         if is_consonant(prev_char) and is_consonant(next_char):
-            return [("i", 0.75), ("e", 0.20), ("ie", 0.05)]
+            return [("i", 1.00)]
         # Case 4: Adjacent to another vowel -> consonantal 'y'
-        return [("y", 0.85), ("i", 0.15)]
+        return [("y", 1.00)]
 
     elif char == 'و':
         # Case 1: Word-initial -> consonantal 'w' (e.g. واحد, وين -> wahed, win)
         if index == 0:
-            return [("w", 0.95), ("ou", 0.05)]
+            return [("w", 1.00)]
         # Case 2: Word-final -> 'ou' or 'o' or 'u'
         if index == len(word) - 1:
-            return [("ou", 0.65), ("o", 0.25), ("u", 0.10)]
+            return [("ou", 0.75), ("o", 0.25)]
         # Case 3: Medial between consonants (e.g. شكون -> chkoun) -> 'ou' or 'o'
         if is_consonant(prev_char) and is_consonant(next_char):
-            return [("ou", 0.75), ("o", 0.20), ("u", 0.05)]
-        return [("w", 0.80), ("ou", 0.20)]
+            return [("ou", 0.75), ("o", 0.25)]
+        return [("w", 1.00)]
 
     elif char == 'ا':
         # Case 1: Word-initial -> 'a' or 'e'
@@ -48,7 +48,7 @@ def apply_madd_rules(word: str, index: int) -> list:
             return [("a", 0.85), ("e", 0.15)]
         # Case 2: Word-final -> 'a'
         if index == len(word) - 1:
-            return [("a", 0.95), ("e", 0.05)]
+            return [("a", 1)]
         # Case 3: Medial -> long vowel 'a' or 'aa'
         return [("a", 0.90), ("aa", 0.10)]
 
