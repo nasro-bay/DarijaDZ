@@ -172,10 +172,21 @@ def reservoir_sample_djelfa(
     seen = 0
     for path in DJELFA_FILES:
         with path.open("r", encoding="utf-8") as f:
-            for line in f:
+            for lineno, line in enumerate(f, 1):
                 if not line.strip():
                     continue
-                row = json.loads(line)
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    # Real, observed failure mode, not speculative: a batch
+                    # file was found with two records glued onto one line
+                    # (a write truncated mid-record, then the next record
+                    # appended with no newline in between) -- see
+                    # Youtube_scrap's own data, not this script's fault.
+                    # Skip and keep going rather than losing the whole
+                    # sampling run to one corrupt line.
+                    print(f"  WARNING: skipping malformed JSON at {path.name}:{lineno}")
+                    continue
                 if not row.get("text", "").strip():
                     continue
                 if row.get("id") in exclude_ids:
@@ -198,10 +209,17 @@ def reservoir_sample_youtube_buckets(
     seen: dict[str, int] = {k: 0 for k in target_pools}
     for i, path in enumerate(YOUTUBE_FILES):
         with path.open("r", encoding="utf-8") as f:
-            for line in f:
+            for lineno, line in enumerate(f, 1):
                 if not line.strip():
                     continue
-                row = json.loads(line)
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    # See the matching comment in reservoir_sample_djelfa --
+                    # a real corrupted line was found in the wild (two
+                    # records glued onto one line), not a hypothetical.
+                    print(f"  WARNING: skipping malformed JSON at {path.name}:{lineno}")
+                    continue
                 text = row.get("text", "")
                 if not text.strip():
                     continue
