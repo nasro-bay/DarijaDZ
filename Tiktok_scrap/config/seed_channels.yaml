@@ -1,0 +1,53 @@
+# User-curated TikTok creators to scrape -- not automatic discovery,
+# same convention as Youtube_scrap/config/seed_channels.yaml. Add more
+# Algerian creators here as they're identified.
+
+channels:
+  - nemishow
+  - brothers_phone_off
+  - joospider
+  - elias.mechakra
+  - fakhr_eddine_1
+  - sdz.travel2
+  - tamim_boufenouche
+  - lamouriilyes
+  - carolineflorstad.off
+  - zed_street.wear
+  - maneltiribrk
+  - khellafsabrin19
+  - kaderamraniofficiel
+  - echorouktvofficiel
+  - elbilad_officiel
+  - echorouknewsofficiel
+  - lehrizi.habiba
+  - brothers_phone_off
+  - aymen_boudraa
+  - zaki__rb1
+  - bn.zacki
+  - hichamcook
+  - anes.tina
+  - samiratv.officielle
+  - iabdouboutaleb
+  - sifou.213
+  - aymen.bgh
+  - khoubaii
+  - off.213
+  - touchelabdz
+  - vintagetouchdz
+  - zarouta_youcef
+  - mimho_dz
+  - tiko_style_off
+  - numidialezoul_off
+  - law_by_amir_
+  - lkemyatv
+  - ghano_cuisine
+  - chefsalahelbatni
+  - ripou_bn
+  - yahmed.rayek
+  - withrssle
+  - brahim.sd
+  - eptv_dz
+  - lesverts.faf
+  - mdn_gov_dz
+  - wassim.gsm
+  - fethiaddani

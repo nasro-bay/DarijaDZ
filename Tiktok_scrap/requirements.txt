@@ -1,0 +1,13 @@
+requests>=2.31,<3
+jmespath>=1.0,<2
+loguru>=0.7,<1
+beautifulsoup4>=4.12,<5
+PyYAML>=6.0,<7
+playwright>=1.50,<2
+datasketch>=1.6,<2
+
+# Primary video-discovery mechanism (see discover.py's discover_videos_ytdlp) --
+# actively-maintained TikTok extractor, more robust against anti-bot changes
+# than the Playwright-interception fallback below it.
+yt-dlp>=2026.1,<2027
+curl_cffi>=0.7,<1  # optional but recommended -- enables yt-dlp's browser TLS/HTTP2 impersonation
