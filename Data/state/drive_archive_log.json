@@ -1,0 +1,92 @@
+[
+  {
+    "timestamp": "2026-09-15T15:44:47",
+    "execute": true,
+    "sources": {
+      "Tiktok_scrap": [
+        {
+          "category": "raw",
+          "count": 5,
+          "bytes": 16153,
+          "deleted": 5
+        },
+        {
+          "category": "processed",
+          "count": 2,
+          "bytes": 2561341442,
+          "deleted": 2
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-09-15T19:41:25",
+    "execute": true,
+    "sources": {
+      "Tiktok_scrap": [
+        {
+          "category": "processed",
+          "count": 0,
+          "bytes": 0,
+          "deleted": 0
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-09-15T19:41:37",
+    "execute": true,
+    "sources": {
+      "Tiktok_scrap": [
+        {
+          "category": "processed",
+          "count": 0,
+          "bytes": 0,
+          "deleted": 0
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-09-15T19:41:56",
+    "execute": true,
+    "sources": {
+      "Tiktok_scrap": [
+        {
+          "category": "processed",
+          "count": 0,
+          "bytes": 0,
+          "deleted": 0
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-09-16T11:01:46",
+    "execute": true,
+    "sources": {
+      "Tiktok_scrap": [
+        {
+          "category": "processed",
+          "count": 0,
+          "bytes": 0,
+          "deleted": 0
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-09-16T11:02:07",
+    "execute": true,
+    "sources": {
+      "Tiktok_scrap": [
+        {
+          "category": "processed",
+          "count": 0,
+          "bytes": 0,
+          "deleted": 0
+        }
+      ]
+    }
+  }
+]
