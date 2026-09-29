@@ -1,0 +1,4 @@
+# Ignore data files and output reports, but keep python scripts
+*.jsonl
+unigrams.txt
+arabizi_frequencies.txt
