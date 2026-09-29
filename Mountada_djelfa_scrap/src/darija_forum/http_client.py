@@ -13,9 +13,21 @@ from .session import CHALLENGE_TITLE_MARKERS, get_or_refresh_session
 
 REQUEST_TIMEOUT_SECONDS = 30
 
+# vBulletin's guest read-markers: the site appends every forum/thread id viewed to these cookies, and
+# `requests.Session` sends them back on every later request. After ~390 distinct subforums the Cookie
+# header passes Apache's ~8 KB limit and every request starts returning `400 Bad Request` (observed:
+# first 400 at request 392 with an 8,197-char Cookie header). They only track "what did this visitor
+# read", nothing the crawl needs, so they are dropped after each response.
+VIEW_TRACKING_COOKIES = ("bbforum_view", "bbthread_view")
+
 
 class SessionExpiredError(RuntimeError):
     """Raised when a request comes back as a Cloudflare challenge page."""
+
+
+class BadRequestError(RuntimeError):
+    """Raised on an HTTP 400 -- never parse it as an (empty) forum page, that silently mislabels or
+    skips whole subforums."""
 
 
 def looks_like_challenge_response(resp: requests.Response) -> bool:
@@ -45,12 +57,23 @@ class ForumHttpClient:
                 cookie["name"], cookie["value"], domain=cookie.get("domain"), path=cookie.get("path", "/")
             )
 
+    def _drop_view_tracking_cookies(self) -> None:
+        for cookie in list(self._session.cookies):
+            if cookie.name in VIEW_TRACKING_COOKIES:
+                self._session.cookies.clear(cookie.domain, cookie.path, cookie.name)
+
     def get(self, url: str, **kwargs) -> requests.Response:
         resp = self._session.get(url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs)
+        self._drop_view_tracking_cookies()
         if looks_like_challenge_response(resp):
             raise SessionExpiredError(
                 f"Cloudflare challenge reappeared for {url} (status {resp.status_code}) — "
                 f"the saved session expired. Rerun scripts/bootstrap_session.py with a fresh "
                 f"cookie/User-Agent from a real browser."
+            )
+        if resp.status_code == 400:
+            raise BadRequestError(
+                f"HTTP 400 for {url} (Cookie header was {len(resp.request.headers.get('Cookie', ''))} chars). "
+                "If this persists, the saved session's cookies are too large: rerun scripts/bootstrap_session.py."
             )
         return resp

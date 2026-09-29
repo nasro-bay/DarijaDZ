@@ -5,3 +5,5 @@ playwright
 pyyaml
 tqdm
 datasketch
+scikit-learn
+skops

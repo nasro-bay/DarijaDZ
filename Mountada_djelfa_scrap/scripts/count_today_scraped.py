@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""CLI: counts how many posts were scraped *today*, straight from the raw
-JSONL files -- no need to run run_pipeline.py first.
+"""CLI: counts how many posts (= forum comments), threads and subforums were scraped *today*,
+straight from the raw JSONL files -- no need to run run_pipeline.py first.
 
 Works because every post record is stamped with `scrape_date` (the date
 it was actually scraped) at scrape time, in scrape.py's post-record
@@ -34,6 +34,8 @@ def main() -> None:
     raw_dir = ROOT / "data" / "raw" / "djelfa"
     count = 0
     files_touched = 0
+    threads: set[str] = set()
+    subforums: set[str] = set()
     for path in sorted(raw_dir.rglob("*.jsonl")):
         file_count = 0
         with path.open("r", encoding="utf-8") as f:
@@ -44,12 +46,17 @@ def main() -> None:
                 rec = json.loads(line)
                 if rec.get("scrape_date") == target_date:
                     file_count += 1
+                    threads.add(str(rec.get("thread_id")))
+                    subforums.add(str(rec.get("subforum_id")))
         if file_count:
             files_touched += 1
             count += file_count
 
-    print(f"{target_date}: {count:,} posts scraped, across {files_touched:,} raw thread file(s)")
-
+    print(f"{target_date}:")
+    print(f"  comments (posts): {count:,}")
+    print(f"  threads:          {len(threads):,}")
+    print(f"  subforums:        {len(subforums):,}")
+    print(f"  raw thread files: {files_touched:,}")
 
 if __name__ == "__main__":
     main()
