@@ -10,6 +10,7 @@ __pycache__/
 
 # Scraped/generated data (kept local, not versioned)
 Youtube_scrap/data/raw/*
+Youtube_scrap/data/unified_corpus.jsonl
 Youtube_scrap/data/processed/*
 Youtube_scrap/data/state/*
 Youtube_scrap/data/logs/*
@@ -28,6 +29,16 @@ Mountada_djelfa_scrap/data/logs/*
 !Mountada_djelfa_scrap/data/state/.gitkeep
 !Mountada_djelfa_scrap/data/logs/.gitkeep
 
+Tiktok_scrap/data/raw/*
+Tiktok_scrap/data/processed/*
+Tiktok_scrap/data/state/*
+Tiktok_scrap/data/logs/*
+Tiktok_scrap/data/unified_corpus.jsonl
+!Tiktok_scrap/data/raw/.gitkeep
+!Tiktok_scrap/data/processed/.gitkeep
+!Tiktok_scrap/data/state/.gitkeep
+!Tiktok_scrap/data/logs/.gitkeep
+
 # One-time-rebuild backup dirs (data/backup_<reason>/ — see CLAUDE.md's
 # "rebuilding processed output" convention) — always local-only, never
 # versioned, regardless of which rebuild produced them.
@@ -38,6 +49,11 @@ Project_context.md
 CLAUDE.md
 AGENTS.md
 **/PLAN.md
+# GPU optimization playbook -- derived from a separate, non-Darija lab
+# (deep learning/labs/training neural networks/GPU_exp/), copied in here only
+# as a working reference for this repo's own GPU runs. Same local-only
+# treatment as CLAUDE.md above -- not Darija project content.
+GPU_optimization.md
 N-gram/plan.md
 Embeddings/intrinsic_eval/plan.md
 Embeddings/intrinsic_eval/guide.md
@@ -65,12 +81,26 @@ Data/*.csv
 # "generated data, not versioned" treatment as every other data/ dir above.
 Tokenization/data/*
 Tokenization/models/*
+Tokenization/models_bigcorpus/*
+Tokenization/models_backup_*/
 !Tokenization/data/.gitkeep
 !Tokenization/models/.gitkeep
 
 DarijaDZ/*
 Kaggle_DarijaDz/*
 Kaggle.md
+
+# Same treatment -- HF dataset release staging folder for the dialect-ID
+# labels, generated from Dialect_Identification/data/labeled_10k.jsonl,
+# pushed to HF directly, not versioned here.
+DarijaDZ_DialectID/*
+
+# Same treatment -- HF model-repo staging folder for the char n-gram +
+# SVM-RBF dialect classifier (skops-serialized), generated from
+# Dialect_Identification/models/best_model/*.pkl via
+# Dialect_Identification/scripts/best_model/train_and_save.py, pushed to
+# HF directly, not versioned here.
+DarijaDZ_DialectID_Classifier/*
 
 # HF model-repo staging folder (same treatment as DarijaDZ/Kaggle_DarijaDz
 # above) -- large trained tokenizer artifacts (.model/.vocab/tokenizer.json
@@ -121,6 +151,10 @@ N-gram/models/*
 # baselines -- see Embeddings/word2vec/plan.md).
 Embeddings/word2vec_attention/data/*
 Embeddings/word2vec_attention/models/*
+Embeddings/word2vec_attention/data_bigcorpus/*
+Embeddings/word2vec_attention/models_bigcorpus/*
+Embeddings/word2vec_attention/data_backup_*/
+Embeddings/word2vec_attention/models_backup_*/
 !Embeddings/word2vec_attention/data/.gitkeep
 !Embeddings/word2vec_attention/models/.gitkeep
 Embeddings/word2vec_attention/plan.md
@@ -131,8 +165,33 @@ Embeddings/word2vec_attention/guide.md
 # so only checkpoints need ignoring here, no data/ dir per subfolder.
 Embeddings/word2vec/cbow/models/*
 Embeddings/word2vec/skip-gram/models/*
+Embeddings/word2vec/cbow/models_bigcorpus/*
+Embeddings/word2vec/skip-gram/models_bigcorpus/*
+Embeddings/word2vec/cbow/models_backup_*/
+Embeddings/word2vec/skip-gram/models_backup_*/
 !Embeddings/word2vec/cbow/models/.gitkeep
 !Embeddings/word2vec/skip-gram/models/.gitkeep
+
+# GloVe (Embeddings/glove): the selected corpus, tokenized arrays, co-occurrence
+# shards and trained vectors are large and fully reproducible via
+# Embeddings/glove/scripts/*.py -- same "generated data, not versioned"
+# treatment as the other embedding folders. plan.md/guide.md are internal docs.
+Embeddings/glove/data/*
+Embeddings/glove/models/*
+!Embeddings/glove/data/.gitkeep
+!Embeddings/glove/models/.gitkeep
+Embeddings/glove/plan.md
+Embeddings/glove/guide.md
+
+# ELMo (Embeddings/elmo): memmapped id streams, vocab/char tables and biLM
+# checkpoints are large and reproducible via Embeddings/elmo/scripts/*.py --
+# same treatment as the other embedding folders. plan.md/guide.md are internal docs.
+Embeddings/elmo/data/*
+Embeddings/elmo/models/*
+!Embeddings/elmo/data/.gitkeep
+!Embeddings/elmo/models/.gitkeep
+Embeddings/elmo/plan.md
+Embeddings/elmo/guide.md
 
 # Dialect/language-ID sampling + Qwen3.5-4B-labeled dataset -- large,
 # reproducible via Dialect_Identification/scripts/build_dataset.py +
@@ -157,6 +216,29 @@ NArabizi_sent/data/*
 !NArabizi_sent/data/.gitkeep
 NArabizi_sent/
 
+# LM_DiD -- decoder-only word-level LM. data/ (vocab.json, tokens.bin,
+# tokens_meta.json) reproducible via scripts/build_vocab.py +
+# build_training_data.py; models/ are training checkpoints. plan.md/
+# guide.md are internal docs, same treatment as every other subproject.
+LM_DiD/data/*
+!LM_DiD/data/.gitkeep
+LM_DiD/models/*
+!LM_DiD/models/.gitkeep
+LM_DiD/plan.md
+LM_DiD/guide.md
+DarijaDZ_scalinglaws/plan.md
+
+# DarijaDZ_scalinglaws: token caches, sweep result JSON/plots (data/) and the course lab
+# handout (md/pdf) -- pushed by mistake once, removed from the remote; data/ is reproducible
+# via scripts/build_data.py + the notebooks, and the handout isn't this project's own content.
+DarijaDZ_scalinglaws/data/*
+!DarijaDZ_scalinglaws/data/.gitkeep
+DarijaDZ_scalinglaws/scaling_laws_lab.md
+DarijaDZ_scalinglaws/scaling_laws_lab.pdf
+
 pytest.ini
 
 requirements-dev.txt
+# VS Code workspace settings -- machine-specific absolute paths
+# (ai-gpu venv location), same local-only treatment as CLAUDE.md above.
+.vscode/
