@@ -155,29 +155,39 @@ Embeddings/word2vec_attention/data_bigcorpus/*
 Embeddings/word2vec_attention/models_bigcorpus/*
 Embeddings/word2vec_attention/data_backup_*/
 Embeddings/word2vec_attention/models_backup_*/
+Embeddings/word2vec_attention/models_dim64/*
 !Embeddings/word2vec_attention/data/.gitkeep
 !Embeddings/word2vec_attention/models/.gitkeep
+!Embeddings/word2vec_attention/models_dim64/.gitkeep
 Embeddings/word2vec_attention/plan.md
 Embeddings/word2vec_attention/guide.md
 
 # Classic CBOW + Skip-gram baselines (no attention) -- share
 # word2vec_attention/data/'s prepared cache (read directly, not copied),
 # so only checkpoints need ignoring here, no data/ dir per subfolder.
+# models_dim64/ (the 64-d variant, its own folder via WORD2VEC_MODELS_DIR --
+# see each guide.md) gets the same treatment as models/.
 Embeddings/word2vec/cbow/models/*
 Embeddings/word2vec/skip-gram/models/*
 Embeddings/word2vec/cbow/models_bigcorpus/*
 Embeddings/word2vec/skip-gram/models_bigcorpus/*
 Embeddings/word2vec/cbow/models_backup_*/
 Embeddings/word2vec/skip-gram/models_backup_*/
+Embeddings/word2vec/cbow/models_dim64/*
+Embeddings/word2vec/skip-gram/models_dim64/*
 !Embeddings/word2vec/cbow/models/.gitkeep
 !Embeddings/word2vec/skip-gram/models/.gitkeep
+!Embeddings/word2vec/cbow/models_dim64/.gitkeep
+!Embeddings/word2vec/skip-gram/models_dim64/.gitkeep
 
 # GloVe (Embeddings/glove): the selected corpus, tokenized arrays, co-occurrence
 # shards and trained vectors are large and fully reproducible via
 # Embeddings/glove/scripts/*.py -- same "generated data, not versioned"
 # treatment as the other embedding folders. plan.md/guide.md are internal docs.
+# glove_run*.log are training-run console logs, same treatment as data/.
 Embeddings/glove/data/*
 Embeddings/glove/models/*
+Embeddings/glove/*.log
 !Embeddings/glove/data/.gitkeep
 !Embeddings/glove/models/.gitkeep
 Embeddings/glove/plan.md
@@ -186,12 +196,25 @@ Embeddings/glove/guide.md
 # ELMo (Embeddings/elmo): memmapped id streams, vocab/char tables and biLM
 # checkpoints are large and reproducible via Embeddings/elmo/scripts/*.py --
 # same treatment as the other embedding folders. plan.md/guide.md are internal docs.
+# tests/ was pushed once already -- untracked (git rm --cached) and ignored
+# per explicit instruction, same "ignore models/data/tests" treatment applied
+# repo-wide across Embeddings/ below.
 Embeddings/elmo/data/*
 Embeddings/elmo/models/*
+Embeddings/elmo/tests/*
 !Embeddings/elmo/data/.gitkeep
 !Embeddings/elmo/models/.gitkeep
 Embeddings/elmo/plan.md
 Embeddings/elmo/guide.md
+
+# Embeddings/intrinsic_eval/data: the curated word-similarity/analogy gold
+# sets (analogy_pairs.jsonl, word_similarity.jsonl) -- hand-authored, NOT
+# reproducible from a script like every other Embeddings/*/data/ above.
+# Untracked (git rm --cached) and ignored per explicit "ignore data" for
+# this directory; unlike the rest, losing the only copy here would lose
+# real hand-curated work, so keep a backup outside git if these change.
+Embeddings/intrinsic_eval/data/*
+!Embeddings/intrinsic_eval/data/.gitkeep
 
 # Dialect/language-ID sampling + Qwen3.5-4B-labeled dataset -- large,
 # reproducible via Dialect_Identification/scripts/build_dataset.py +
@@ -235,6 +258,21 @@ DarijaDZ_scalinglaws/data/*
 !DarijaDZ_scalinglaws/data/.gitkeep
 DarijaDZ_scalinglaws/scaling_laws_lab.md
 DarijaDZ_scalinglaws/scaling_laws_lab.pdf
+
+# DarijaDZ_spaces: each Space's app.py/requirements.txt/README.md/assets stay tracked, but the
+# model weights, vocab/lookup data, and test files are local-only -- weights and data are
+# reproducible (DarijaDZ_WE/model.safetensors + vocab.json copied from Embeddings/glove, map2d.npz
+# via build_assets.py; Arabizi_transliteration's *.jsonl/*.txt are corpus-derived word/frequency
+# data, same treatment as every other subproject's data/ above), and the test files (originally
+# published to the live HF Space, harmlessly) don't need to be duplicated in this repo either.
+DarijaDZ_spaces/DarijaDZ_WE/model.safetensors
+DarijaDZ_spaces/DarijaDZ_WE/vocab.json
+DarijaDZ_spaces/DarijaDZ_WE/map2d.npz
+DarijaDZ_spaces/Arabizi_transliteration/arabic_comments.jsonl
+DarijaDZ_spaces/Arabizi_transliteration/arabizi_frequencies.txt
+DarijaDZ_spaces/Arabizi_transliteration/unigrams.txt
+DarijaDZ_spaces/Arabizi_transliteration/test_transliterate.py
+DarijaDZ_spaces/Arabizi_transliteration/smoke_test.py
 
 pytest.ini
 
