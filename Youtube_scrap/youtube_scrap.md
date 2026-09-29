@@ -191,6 +191,55 @@ python scripts/build_unified_dataset.py   # build + shuffle + README stat sync (
   this one so a single command keeps everything (unified file, shuffled
   file, and the two dataset-card READMEs) in sync.
 
+## 6. Archive raw/processed data to Drive (frees local disk space)
+
+```bash
+python ../Data/scripts/push_to_drive.py --source Youtube_scrap --execute
+```
+
+Archives raw files already folded into a processed batch, and processed
+batches already folded into `data/unified_corpus.jsonl`, to the `DarijaDZ`
+rclone remote (`DarijaDZ:DarijaDZ/data_archive/Youtube_scrap/`) -- only
+deletes the local copy after a checksummed upload is independently
+re-verified (`rclone check`).
+
+Options (all optional, combine freely):
+- `--execute` -- actually delete local files after a verified copy.
+  **Omit this for a dry run** (prints what would be archived/deleted
+  without touching anything) -- always sanity-check a dry run first after
+  a pipeline change.
+- `--source Youtube_scrap` / `--source Tiktok_scrap` -- only archive that
+  one source (default: both).
+- `--category raw` / `--category processed` -- only archive that one
+  category for the chosen source(s) (default: both). E.g. to push just
+  this source's processed batches: `--source Youtube_scrap --category
+  processed --execute`.
+- `--limit N` -- cap it to the first N eligible files per category (for
+  testing the pipeline on a small batch before trusting it with everything).
+
+Safe to interrupt (Ctrl+C) and rerun -- nothing gets deleted locally until
+its whole category's copy+check both pass, and `rclone copy --checksum`
+skips files already uploaded, so a rerun continues rather than
+re-uploading from scratch.
+
+## 7. Publish the channel registry (so collaborators don't re-scrape your channels)
+
+```bash
+python ../Data/scripts/push_channel_registry.py
+```
+
+Publishes a snapshot of every channel already scraped (YouTube from
+`channel_names.json`, TikTok from `scrape_state.json`'s `channels` dict) to
+`DarijaDZ:DarijaDZ/channel_registry/scraped_channels.json`. No options --
+always publishes everything from both sources, overwriting the previous
+snapshot (one-way publish, not a merge -- see the script's own docstring).
+
+Not wired into the scrape/pipeline commands above, so it goes stale
+whenever new channels get scraped -- **rerun this after adding channels**,
+not just after archiving data. A future collaborator would pull this file
+and check it before picking which channels to scrape next, so it doing
+nothing on your end just means their view goes stale too.
+
 ## Repeating the cycle
 
 Add more entries to `seed_videos.yaml` / `seed_channels.yaml`, then rerun

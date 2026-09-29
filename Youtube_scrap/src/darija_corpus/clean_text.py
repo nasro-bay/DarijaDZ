@@ -66,6 +66,24 @@ EMOJI_RUN_RE = re.compile(f"(?:{_EMOJI_GRAPHEME_RE.pattern}){{3,}}")
 # number (e.g. "1000" in a price) and shouldn't be touched.
 ELONGATION_RE = re.compile(r"([^\W\d_])\1{2,}", re.UNICODE)
 
+# A single word repeated 5+ times in a row, separated only by whitespace —
+# keyboard/copy-paste spam ("تم تم تم تم ... تم" x40), distinct from
+# ELONGATION_RE (a repeated *character* inside one word, e.g. "هههه").
+# Threshold ({4,} = 5+ total occurrences) is set well above the 2-3x
+# repeats used for real emphasis in Darija ("لا لا لا") per the project's
+# "preserve natural variation" rule — confirmed empirically on real TikTok
+# data (found via a 1,000-doc sample review), a real but rare (~0.2%)
+# pattern.
+WORD_REPEAT_RE = re.compile(r"(?P<word>\S+)(?:\s+(?P=word)\b){4,}")
+
+# A multi-character phrase/sentence pasted back-to-back 3+ times (promo-spam
+# replies, e.g. a whole sentence glued to itself ~30x with no separator).
+# Minimum unit length of 12 keeps this from ever matching short expressive
+# repeats (well above anything WORD_REPEAT_RE or ELONGATION_RE would catch).
+# Non-greedy so it finds the smallest repeating unit rather than swallowing
+# the whole match as one "unit".
+PHRASE_REPEAT_RE = re.compile(r"(.{12,}?)\1{2,}", re.DOTALL)
+
 PERIOD_RUN_RE = re.compile(r"\.{2,}")
 OTHER_PUNCT_RUN_RE = re.compile(r"([!?؟,،])\1{2,}")  # "،" = Arabic comma, distinct from "," (found on real data)
 
@@ -124,6 +142,14 @@ def strip_timestamps(text: str) -> str:
     return TIMESTAMP_RE.sub(" ", text)
 
 
+def collapse_repeated_phrases(text: str) -> str:
+    return PHRASE_REPEAT_RE.sub(lambda m: m.group(1) * 2, text)
+
+
+def collapse_repeated_words(text: str) -> str:
+    return WORD_REPEAT_RE.sub(lambda m: f"{m.group('word')} {m.group('word')}", text)
+
+
 def collapse_elongation(text: str) -> str:
     return ELONGATION_RE.sub(r"\1\1", text)
 
@@ -148,10 +174,20 @@ def normalize_whitespace(text: str) -> str:
     return text.strip()
 
 
+_PLACEHOLDER_RE = re.compile(r"\[MENTION\]|\[URL\]")
+
+
 def residual_letter_count(text: str) -> int:
-    """Length of `text` after stripping emoji and all non-word characters —
-    used to decide whether a comment is near-empty (emoji-only, punctuation-only)."""
-    no_emoji = EMOJI_CHAR_RE.sub("", text)
+    """Length of `text` after stripping placeholder tokens, emoji, and all
+    non-word characters -- used to decide whether a comment is near-empty
+    (emoji-only, punctuation-only, or *just* a bare [MENTION]/[URL] tag with
+    no actual reply text). Placeholder tokens must be stripped before this
+    count: their own literal letters ("MENTION"/"URL") would otherwise read
+    as real content and prevent an otherwise-empty reply from being dropped
+    -- confirmed on real TikTok data, ~1.2% of processed docs were nothing
+    but a bare "[MENTION]" (plus emoji/punctuation)."""
+    no_placeholders = _PLACEHOLDER_RE.sub("", text)
+    no_emoji = EMOJI_CHAR_RE.sub("", no_placeholders)
     no_punct = _NON_WORD_RE.sub("", no_emoji)
     return len(no_punct.strip())
 
@@ -170,6 +206,8 @@ def clean(text: str) -> Optional[str]:
     text = replace_mentions(text)
     text = replace_urls(text)
     text = strip_timestamps(text)
+    text = collapse_repeated_phrases(text)
+    text = collapse_repeated_words(text)
     text = collapse_elongation(text)
     text = normalize_punctuation(text)
     text = collapse_emoji_runs(text)

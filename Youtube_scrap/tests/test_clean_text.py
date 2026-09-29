@@ -73,5 +73,44 @@ class UnicodeNormalizationTests(unittest.TestCase):
         self.assertEqual(result, "ربي يرحمو صلى الله عليه وسلم وربي يبارك الله فيك")
 
 
+class RepeatSpamTests(unittest.TestCase):
+    """Added after a 1,000-doc TikTok sample review turned up copy-paste
+    spam (a word or phrase pasted dozens of times in one comment) slipping
+    through -- MinHash/LSH dedup only catches near-duplicates *across*
+    documents, not repetition within one. Thresholds are set well above
+    the 2-3x repeats used for real Darija emphasis, per "preserve natural
+    variation". clean_text.py is shared/identical between the YouTube and
+    TikTok sources, so this mirrors Tiktok_scrap/tests/test_clean_text.py."""
+
+    def test_word_repeated_many_times_collapses_to_two(self):
+        self.assertEqual(clean_text.collapse_repeated_words("تم " * 40), "تم تم ")
+
+    def test_word_repeated_three_times_untouched(self):
+        text = "لا لا لا نروح"
+        self.assertEqual(clean_text.collapse_repeated_words(text), text)
+
+    def test_word_repeated_two_times_untouched(self):
+        text = "يا حبيبي حبيبي"
+        self.assertEqual(clean_text.collapse_repeated_words(text), text)
+
+    def test_phrase_glued_many_times_collapses_to_two(self):
+        phrase = "خالد العليان مرحبا بك في الجزائر أفضل صانع محتوى"
+        spam = phrase * 30
+        self.assertEqual(clean_text.collapse_repeated_phrases(spam), phrase * 2)
+
+    def test_short_phrase_repeated_twice_untouched(self):
+        # below the 12-char minimum unit length -- must not touch it
+        text = "هه هه"
+        self.assertEqual(clean_text.collapse_repeated_phrases(text), text)
+
+    def test_normal_sentence_untouched(self):
+        text = "صحابي عايشين في إمارات رجعوا للجزائر"
+        self.assertEqual(clean_text.clean(text), text)
+
+    def test_clean_end_to_end_collapses_word_spam(self):
+        result = clean_text.clean("تم " * 40)
+        self.assertEqual(result, "تم تم")
+
+
 if __name__ == "__main__":
     unittest.main()

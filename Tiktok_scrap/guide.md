@@ -93,14 +93,56 @@ those videos are known-partial; comment *text* collected is still real
 and usable. Videos scraped before this tracking existed show up as
 "unknown" rather than being assumed complete.
 
-## Current state (as of 2026-09-12)
+## 6. Archive raw/processed data to Drive (frees local disk space)
 
-**7 channels scraped**: `anya.hamimed`, `anass0x0`, `rifkaofficiel`,
-`ennhar.tv`, `cgn.mdn.dz`, `amirismail_16_live_16`, `zouaoui_hichem`.
-Cumulative (`data/logs/log.json`): **2,934 videos, 795,691 comments
-collected, 190,703 dropped as near-empty, 604,988 retained**. Live-
-verified end to end (discovery via yt-dlp -> comment scrape -> clean ->
-schema -> processed batch), 19/19 unit tests passing.
+```bash
+python ../Data/scripts/push_to_drive.py --source Tiktok_scrap --execute
+```
+
+Archives raw files already folded into a processed batch, and processed
+batches already folded into `data/unified_corpus.jsonl`, to the `DarijaDZ`
+rclone remote (`DarijaDZ:DarijaDZ/data_archive/Tiktok_scrap/`) -- only
+deletes the local copy after a checksummed upload is independently
+re-verified (`rclone check`).
+
+Options (all optional, combine freely):
+- `--execute` -- actually delete local files after a verified copy.
+  **Omit this for a dry run** (prints what would be archived/deleted
+  without touching anything) -- always sanity-check a dry run first after
+  a pipeline change.
+- `--source Youtube_scrap` / `--source Tiktok_scrap` -- only archive that
+  one source (default: both).
+- `--category raw` / `--category processed` -- only archive that one
+  category for the chosen source(s) (default: both). E.g. to push just
+  this source's processed batches: `--source Tiktok_scrap --category
+  processed --execute`.
+- `--limit N` -- cap it to the first N eligible files per category (for
+  testing the pipeline on a small batch before trusting it with everything).
+
+Safe to interrupt (Ctrl+C) and rerun -- nothing gets deleted locally until
+its whole category's copy+check both pass, and `rclone copy --checksum`
+skips files already uploaded, so a rerun continues rather than
+re-uploading from scratch.
+
+## 7. Publish the channel registry (so collaborators don't re-scrape your channels)
+
+```bash
+python ../Data/scripts/push_channel_registry.py
+```
+
+Publishes a snapshot of every channel already scraped (YouTube from
+`channel_names.json`, TikTok from `scrape_state.json`'s `channels` dict) to
+`DarijaDZ:DarijaDZ/channel_registry/scraped_channels.json`. No options --
+always publishes everything from both sources, overwriting the previous
+snapshot (one-way publish, not a merge -- see the script's own docstring).
+
+Not wired into the scrape/pipeline commands above, so it goes stale
+whenever new channels get scraped -- **rerun this after adding channels**,
+not just after archiving data. A future collaborator would pull this file
+and check it before picking which channels to scrape next, so it doing
+nothing on your end just means their view goes stale too.
+
+## Current state (as of 2026-09-12)
 
 **Known limitation** (see `PLAN.md` for the full investigation):
 TikTok's comment API caps how many comments an unauthenticated request
@@ -112,9 +154,6 @@ video (`report_truncated.py` above); the 2,768 videos scraped before
 this fix existed are marked "unknown," not silently assumed complete.
 
 **Not yet done**:
-- No decision yet on whether this data merges into the published
-  DarijaDZ corpus or stays a parallel source (like djelfa currently
-  does) -- open question, not resolved.
 - `session_health` only tracks per-video comment-fetch failures, not
   yt-dlp discovery failures yet.
 - A genuine uncapped 1-hour timed run hasn't been done -- the two
