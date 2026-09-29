@@ -61,17 +61,26 @@ def main() -> None:
 
     train_count = 0
     heldout_count = 0
+    malformed_count = 0
     with train_path.open("w", encoding="utf-8") as train_out, heldout_path.open(
         "w", encoding="utf-8"
     ) as heldout_out:
         for name, files in SOURCES.items():
             for path in files:
                 with path.open("r", encoding="utf-8") as f:
-                    for line in f:
+                    for lineno, line in enumerate(f, 1):
                         line = line.strip()
                         if not line:
                             continue
-                        doc = json.loads(line)
+                        try:
+                            doc = json.loads(line)
+                        except json.JSONDecodeError:
+                            # a few processed-batch lines are truncated by an
+                            # interrupted writer (e.g. batch_2026-08-30_Nour.jsonl)
+                            # -- skip, don't abort the whole rebuild
+                            malformed_count += 1
+                            print(f"  WARNING: skipping malformed JSON at {path.name}:{lineno}")
+                            continue
                         text = doc["text"].replace("\n", " ").strip()
                         if not text:
                             continue
@@ -85,6 +94,8 @@ def main() -> None:
 
     print(f"train corpus: {train_count:,} docs -> {train_path}")
     print(f"held-out set: {heldout_count:,} docs -> {heldout_path}")
+    if malformed_count:
+        print(f"skipped {malformed_count} malformed JSON line(s)")
 
 
 if __name__ == "__main__":

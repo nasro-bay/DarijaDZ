@@ -22,6 +22,7 @@ Re-run after retraining any of the underlying models.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import warnings
 from pathlib import Path
@@ -30,7 +31,7 @@ from tokenizers import decoders
 from transformers.convert_slow_tokenizer import SpmConverter, _get_prepend_scheme
 
 ROOT = Path(__file__).resolve().parents[1]  # Tokenization/
-MODELS_DIR = ROOT / "models"
+MODELS_DIR = Path(os.environ.get("TOKENIZER_MODELS_DIR") or (ROOT / "models"))
 OUT_DIR = ROOT.parent / "DarijaDz_Tokenizers"
 
 VOCAB_SIZES = (1_000, 5_000, 10_000, 20_000, 30_000)

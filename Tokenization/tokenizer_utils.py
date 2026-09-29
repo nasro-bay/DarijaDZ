@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from dataclasses import dataclass
@@ -13,6 +14,12 @@ from tokenizers import Tokenizer as HFTokenizer
 from tokenizers import decoders
 
 ROOT = Path(__file__).resolve().parent
+
+# Where trained tokenizer artifacts live. Defaults to ROOT/models; set
+# TOKENIZER_MODELS_DIR to point training / eval / HF-repo build at an
+# alternate tree (e.g. models_bigcorpus/) without disturbing the models/
+# tree the embedding pipelines are pinned to.
+MODELS_DIR = Path(os.environ.get("TOKENIZER_MODELS_DIR") or (ROOT / "models"))
 
 VOCAB_SIZES = [1_000, 5_000, 10_000, 20_000, 30_000]
 
@@ -50,20 +57,20 @@ LEGACY_BPE = ROOT / "models" / "bpe" / "tokenizer.json"
 def sp_model_path(model_type: str, vocab_size: int) -> Path:
     if model_type != "unigram":
         raise ValueError(f"not a SentencePiece model type: {model_type}")
-    path = ROOT / "models" / "sentencepiece" / f"{model_type}_{vocab_size}.model"
+    path = MODELS_DIR / "sentencepiece" / f"{model_type}_{vocab_size}.model"
     if path.exists():
         return path
-    # Pre-refactor naming: single 20K unigram model only.
-    if vocab_size == 20_000 and LEGACY_UNIGRAM.exists():
+    # Pre-refactor naming: single 20K unigram model only (default tree only).
+    if vocab_size == 20_000 and MODELS_DIR == ROOT / "models" and LEGACY_UNIGRAM.exists():
         return LEGACY_UNIGRAM
     return path
 
 
 def bpe_model_path(vocab_size: int) -> Path:
-    path = ROOT / "models" / "bpe" / f"bpe_{vocab_size}" / "tokenizer.json"
+    path = MODELS_DIR / "bpe" / f"bpe_{vocab_size}" / "tokenizer.json"
     if path.exists():
         return path
-    if vocab_size == 20_000 and LEGACY_BPE.exists():
+    if vocab_size == 20_000 and MODELS_DIR == ROOT / "models" and LEGACY_BPE.exists():
         return LEGACY_BPE
     return path
 
@@ -75,7 +82,7 @@ def wordpiece_model_path(vocab_size: int) -> Path:
     # an HF tokenizer.json under models/wordpiece/, not a .model file under
     # models/sentencepiece/ -- this path must match train_wordpiece.py's actual
     # output, not the original (unimplemented) design.
-    return ROOT / "models" / "wordpiece" / f"wordpiece_{vocab_size}" / "tokenizer.json"
+    return MODELS_DIR / "wordpiece" / f"wordpiece_{vocab_size}" / "tokenizer.json"
 
 
 def load_heldout_docs(path: Path | None = None) -> list[dict]:
@@ -217,18 +224,18 @@ def _load_bpe(vocab_size: int) -> TokenizerSpec:
 def discover_available_models() -> list[tuple[str, int]]:
     """Return (tokenizer_key, vocab_size) pairs with trained artifacts on disk."""
     found: set[tuple[str, int]] = set()
-    sp_dir = ROOT / "models" / "sentencepiece"
+    sp_dir = MODELS_DIR / "sentencepiece"
     if sp_dir.exists():
         for path in sp_dir.glob("unigram_*.model"):
             vocab_size = int(path.stem.rsplit("_", 1)[-1])
             found.add(("unigram", vocab_size))
             found.add(("unigram_sr", vocab_size))
-    wordpiece_dir = ROOT / "models" / "wordpiece"
+    wordpiece_dir = MODELS_DIR / "wordpiece"
     if wordpiece_dir.exists():
         for path in wordpiece_dir.glob("wordpiece_*/tokenizer.json"):
             vocab_size = int(path.parent.name.rsplit("_", 1)[-1])
             found.add(("wordpiece", vocab_size))
-    bpe_dir = ROOT / "models" / "bpe"
+    bpe_dir = MODELS_DIR / "bpe"
     if bpe_dir.exists():
         for path in bpe_dir.glob("bpe_*/tokenizer.json"):
             vocab_size = int(path.parent.name.rsplit("_", 1)[-1])

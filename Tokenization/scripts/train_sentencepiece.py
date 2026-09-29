@@ -10,13 +10,14 @@ left it — SentencePiece's default NFKC pass is disabled.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import sentencepiece as spm
 
 ROOT = Path(__file__).resolve().parents[1]
 TRAIN_CORPUS = ROOT / "data" / "train_corpus.txt"
-MODEL_DIR = ROOT / "models" / "sentencepiece"
+MODEL_DIR = Path(os.environ.get("TOKENIZER_MODELS_DIR") or (ROOT / "models")) / "sentencepiece"
 
 # Reduce SentencePiece's very verbose INFO logs.
 # 0 = INFO, 1 = WARNING, 2 = ERROR, 3 = FATAL

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 from tokenizers import Tokenizer, decoders
@@ -11,7 +12,7 @@ from tokenizers.trainers import WordPieceTrainer
 ROOT = Path(__file__).resolve().parents[1]
 
 TRAIN_CORPUS = ROOT / "data" / "train_corpus.txt"
-MODEL_DIR = ROOT / "models" / "wordpiece"
+MODEL_DIR = Path(os.environ.get("TOKENIZER_MODELS_DIR") or (ROOT / "models")) / "wordpiece"
 
 
 SPECIAL_TOKENS = [

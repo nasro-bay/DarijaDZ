@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 from tokenizers import Tokenizer
@@ -21,7 +22,8 @@ def train(*, vocab_size: int) -> None:
     if not TRAIN_CORPUS.exists():
         raise FileNotFoundError(f"{TRAIN_CORPUS} not found — run build_training_corpus.py first.")
 
-    model_dir = ROOT / "models" / "bpe" / f"bpe_{vocab_size}"
+    models_root = Path(os.environ.get("TOKENIZER_MODELS_DIR") or (ROOT / "models"))
+    model_dir = models_root / "bpe" / f"bpe_{vocab_size}"
     model_dir.mkdir(parents=True, exist_ok=True)
 
     tokenizer = Tokenizer(BPE(unk_token="<unk>"))
