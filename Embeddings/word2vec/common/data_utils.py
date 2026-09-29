@@ -16,6 +16,7 @@ docstring for why cbow/skip-gram don't need equivalent batching logic).
 from __future__ import annotations
 
 import json
+import os
 import random
 import sys
 from pathlib import Path
@@ -23,16 +24,21 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]  # project root
-WORD2VEC_ATTENTION_DATA = ROOT / "Embeddings" / "word2vec_attention" / "data"
+# Same WORD2VEC_DATA_DIR override as word2vec_attention/scripts/build_training_data.py
+# -- must point at the same tree that script was run with.
+WORD2VEC_ATTENTION_DATA = Path(
+    os.environ.get("WORD2VEC_DATA_DIR") or (ROOT / "Embeddings" / "word2vec_attention" / "data")
+)
 
 sys.path.insert(0, str(ROOT / "Tokenization"))
-sys.path.insert(0, str(ROOT / "Arabizi_transliteration"))
+sys.path.insert(0, str(ROOT / "DarijaDZ_spaces" / "Arabizi_transliteration"))
 from tokenizer_utils import load_tokenizer  # noqa: E402
 from transliterate import transliterate_word  # noqa: E402
 
-TOKENIZER_KEY = "bpe"
+# Switched from "bpe" to "unigram" -- see build_training_data.py's comment.
+TOKENIZER_KEY = "unigram"
 VOCAB_SIZE = 20_000
-PAD_ID = 0  # verified against Tokenization/models/bpe/bpe_20000/vocab.json: "<pad>" -> 0
+PAD_ID = 0  # SentencePiece trained with pad_id=0 explicitly (train_sentencepiece.py) -- same as the old BPE-20K vocab's <pad>=0
 
 SUBSAMPLE_THRESHOLD = 1e-3
 AUGMENT_RATE = 0.20

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections import Counter, defaultdict
@@ -25,7 +26,10 @@ from sklearn.cluster import KMeans
 ROOT = Path(__file__).resolve().parents[3]
 YOUTUBE_DIR = ROOT / "Youtube_scrap" / "data" / "processed"
 DJELFA_DIR = ROOT / "Mountada_djelfa_scrap" / "data" / "processed"
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+# WORD2VEC_DATA_DIR override lets a bigcorpus/new-tokenizer rebuild write
+# to a separate tree (e.g. data_bigcorpus/) without touching the data/
+# the currently-trained embedding checkpoints were built from.
+DATA_DIR = Path(os.environ.get("WORD2VEC_DATA_DIR") or (Path(__file__).resolve().parents[1] / "data"))
 
 sys.path.insert(0, str(ROOT / "Tokenization"))
 from tokenizer_utils import load_tokenizer  # noqa: E402
@@ -36,7 +40,11 @@ from tokenizer_utils import load_tokenizer  # noqa: E402
 ARABIC_RE = re.compile(r"[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻾]")
 LATIN_RE = re.compile(r"[a-zA-ZÀ-ɏ]")
 
-TOKENIZER_KEY = "bpe"
+# Switched from "bpe" to "unigram" -- SentencePiece Unigram won the
+# tokenization_eval.ipynb sweep on the rebuilt 16.47M-doc corpus (best
+# compression/fertility at every vocab size, 0 round-trip errors); see
+# Tokenization/DarijaDz_Tokenizers/README.md.
+TOKENIZER_KEY = "unigram"
 VOCAB_SIZE = 20_000
 N_CLUSTERS = 3
 
@@ -75,13 +83,21 @@ def iter_raw_docs(limit: int | None):
     seen = 0
     for batch_file in batch_files:
         with batch_file.open("r", encoding="utf-8") as f:
-            for line in f:
+            for lineno, line in enumerate(f, 1):
                 if not line.strip():
                     continue
                 if limit is not None and seen >= limit:
                     return
+                try:
+                    doc = json.loads(line)
+                except json.JSONDecodeError:
+                    # a few processed-batch lines are truncated by an
+                    # interrupted writer (e.g. batch_2026-08-30_Nour.jsonl)
+                    # -- skip, don't abort the whole build
+                    print(f"  WARNING: skipping malformed JSON at {batch_file.name}:{lineno}")
+                    continue
                 seen += 1
-                yield json.loads(line)
+                yield doc
 
 
 def main() -> None:

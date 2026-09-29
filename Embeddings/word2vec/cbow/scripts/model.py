@@ -11,6 +11,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def round_up_to_multiple(n: int, multiple: int = 64) -> int:
+    """Pads the embedding table to a tiling-friendly row count (same
+    convention as LM_DiD/scripts/model.py) -- the extra rows never
+    receive gradient since token ids never reach them, this only helps
+    GPU kernel tiling."""
+    return ((n + multiple - 1) // multiple) * multiple
+
+
 def masked_mean_pool(x: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
     """x: (batch, window, dim), attention_mask: (batch, window) bool, True
     = real token. Averages only over real (non-padded) positions -- a
@@ -27,13 +35,15 @@ def masked_mean_pool(x: torch.Tensor, attention_mask: torch.Tensor) -> torch.Ten
 class CBOW(nn.Module):
     def __init__(self, vocab_size: int = 20_000, embed_dim: int = 128, pad_id: int = 0):
         super().__init__()
+        self.vocab_size = vocab_size
+        self.padded_vocab_size = round_up_to_multiple(vocab_size)
         # The CBOW "hidden layer" -- context-word input embeddings. Kept as
         # "the word vectors" after training, same convention as word2vec_attention.
-        self.input_embeddings = nn.Embedding(vocab_size, embed_dim, padding_idx=pad_id)
+        self.input_embeddings = nn.Embedding(self.padded_vocab_size, embed_dim, padding_idx=pad_id)
         # Separate output/negative-sampling embedding matrix -- standard
         # word2vec convention (two embedding tables, only the input one is
         # used downstream).
-        self.output_embeddings = nn.Embedding(vocab_size, embed_dim)
+        self.output_embeddings = nn.Embedding(self.padded_vocab_size, embed_dim)
 
         nn.init.uniform_(self.input_embeddings.weight, -0.5 / embed_dim, 0.5 / embed_dim)
         nn.init.zeros_(self.output_embeddings.weight)

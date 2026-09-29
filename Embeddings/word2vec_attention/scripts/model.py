@@ -15,6 +15,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def round_up_to_multiple(n: int, multiple: int = 64) -> int:
+    """Pads the embedding table to a tiling-friendly row count (same
+    convention as LM_DiD/scripts/model.py and CBOW/SkipGram's model.py)."""
+    return ((n + multiple - 1) // multiple) * multiple
+
+
 def masked_mean_pool(x: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
     """x: (batch, seq, dim), attention_mask: (batch, seq) bool, True = real
     token. Averages only over real (non-padded) positions -- a plain mean
@@ -38,12 +44,14 @@ class CBOWAttention(nn.Module):
         pad_id: int = 0,
     ):
         super().__init__()
+        self.vocab_size = vocab_size
+        self.padded_vocab_size = round_up_to_multiple(vocab_size)
         # The CBOW "hidden layer" -- context-word input embeddings.
-        self.input_embeddings = nn.Embedding(vocab_size, embed_dim, padding_idx=pad_id)
+        self.input_embeddings = nn.Embedding(self.padded_vocab_size, embed_dim, padding_idx=pad_id)
         # Separate output/negative-sampling embedding matrix -- standard
         # word2vec convention (two embedding tables, only the input one is
         # kept as "the word vectors" after training).
-        self.output_embeddings = nn.Embedding(vocab_size, embed_dim)
+        self.output_embeddings = nn.Embedding(self.padded_vocab_size, embed_dim)
 
         self.self_attn = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
         self.norm1 = nn.LayerNorm(embed_dim)

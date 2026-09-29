@@ -115,8 +115,10 @@ def main() -> None:
               f"{r['similarity_pairs_scored']:>5}/{r['similarity_pairs_oov']:<5} "
               f"{r['analogy_accuracy']:>12.4f} {r['analogy_questions']:>9}/{r['analogy_skipped_oov']:<8}")
 
-    (MODELS_DIR / "eval_results.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
-    print(f"\nWrote {MODELS_DIR / 'eval_results.json'}")
+    # A run restricted with --models must not overwrite the full table.
+    out_name = "eval_results_subset.json" if args.models else "eval_results.json"
+    (MODELS_DIR / out_name).write_text(json.dumps(results, indent=2), encoding="utf-8")
+    print(f"\nWrote {MODELS_DIR / out_name}")
 
 
 if __name__ == "__main__":

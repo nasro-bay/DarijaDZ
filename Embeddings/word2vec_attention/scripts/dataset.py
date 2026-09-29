@@ -24,7 +24,7 @@ import torch
 from torch.utils.data import Dataset, Sampler
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "Arabizi_transliteration"))
+sys.path.insert(0, str(ROOT / "DarijaDZ_spaces" / "Arabizi_transliteration"))
 from transliterate import transliterate_word  # noqa: E402
 
 PAD_ID = 0  # verified against Tokenization/models/bpe/bpe_20000/vocab.json: "<pad>" -> 0

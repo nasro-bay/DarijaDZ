@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -26,8 +27,11 @@ from dataset import (
 from model import CBOWAttention
 
 ROOT = Path(__file__).resolve().parents[3]
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
+# Same WORD2VEC_DATA_DIR/WORD2VEC_MODELS_DIR overrides as build_training_data.py --
+# point a bigcorpus/new-tokenizer run at separate trees so the checkpoint this
+# module's docstring references (checkpoint_step675000.pt) stays untouched.
+DATA_DIR = Path(os.environ.get("WORD2VEC_DATA_DIR") or (Path(__file__).resolve().parents[1] / "data"))
+MODELS_DIR = Path(os.environ.get("WORD2VEC_MODELS_DIR") or (Path(__file__).resolve().parents[1] / "models"))
 
 sys.path.insert(0, str(ROOT / "Tokenization"))
 from tokenizer_utils import load_tokenizer  # noqa: E402

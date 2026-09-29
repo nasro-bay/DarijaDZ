@@ -10,6 +10,7 @@ Run via the GPU venv's Python (see ../../requirements.txt):
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -21,7 +22,7 @@ from dataset import CBOWCollator, RowDataset
 from model import CBOW
 
 ROOT = Path(__file__).resolve().parents[3]  # Embeddings/
-MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
+MODELS_DIR = Path(os.environ.get("WORD2VEC_MODELS_DIR") or (Path(__file__).resolve().parents[1] / "models"))
 
 sys.path.insert(0, str(ROOT / "word2vec"))
 from common.data_utils import (  # noqa: E402

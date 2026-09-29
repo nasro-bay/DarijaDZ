@@ -11,15 +11,23 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def round_up_to_multiple(n: int, multiple: int = 64) -> int:
+    """Pads the embedding table to a tiling-friendly row count (same
+    convention as LM_DiD/scripts/model.py and CBOW's model.py)."""
+    return ((n + multiple - 1) // multiple) * multiple
+
+
 class SkipGram(nn.Module):
     def __init__(self, vocab_size: int = 20_000, embed_dim: int = 128, pad_id: int = 0):
         super().__init__()
+        self.vocab_size = vocab_size
+        self.padded_vocab_size = round_up_to_multiple(vocab_size)
         # Center-word input embeddings -- kept as "the word vectors" after
         # training, same convention as CBOW/CBOWAttention.
-        self.input_embeddings = nn.Embedding(vocab_size, embed_dim, padding_idx=pad_id)
+        self.input_embeddings = nn.Embedding(self.padded_vocab_size, embed_dim, padding_idx=pad_id)
         # Separate output/negative-sampling embedding matrix, scores
         # context words (and negatives) against a center word's vector.
-        self.output_embeddings = nn.Embedding(vocab_size, embed_dim)
+        self.output_embeddings = nn.Embedding(self.padded_vocab_size, embed_dim)
 
         nn.init.uniform_(self.input_embeddings.weight, -0.5 / embed_dim, 0.5 / embed_dim)
         nn.init.zeros_(self.output_embeddings.weight)
