@@ -39,7 +39,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PROCESSED_DIR = ROOT / "Youtube_scrap" / "data" / "processed"
 OUTPUT_PATH = Path(__file__).resolve().parents[1] / "data" / "augmented_corpus.jsonl"
 
-sys.path.insert(0, str(ROOT / "Arabizi_transliteration"))
+sys.path.insert(0, str(ROOT / "DarijaDZ_spaces" / "Arabizi_transliteration"))
 from transliterate import transliterate  # noqa: E402
 
 SAMPLE_SEED = 42
