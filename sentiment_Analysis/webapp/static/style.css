@@ -1,0 +1,133 @@
+/* Same Algeria-flag palette + Cairo font + topbar/flag-strip identity as the rest of the DarijaDZ
+   ecosystem (Arabizi_transliteration, DarijaDZ_WE Space, Embeddings/intrinsic_eval). Single light
+   theme, like those other local tools -- no dark-mode variant needed here. */
+:root{
+  --dz-green:#04663a; --dz-green-dark:#054d2c; --dz-red:#c8102e; --dz-gold:#b8922f;
+  --bg:#f7f4ee; --surface:#ffffff; --ink:#1e2723; --muted:#74827b; --border:#e2e0d8;
+  --chip-pos:#04663a; --chip-neg:#c8102e; --chip-neu:#74827b; --chip-mix:#b8922f; --chip-unsure:#4a6fa5;
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg); color:var(--ink); font-family:"Cairo","Segoe UI",Arial,sans-serif;
+  margin:0; padding:16px;
+}
+.wrap{max-width:900px; margin:0 auto;}
+#topbar{display:flex; align-items:center; gap:14px; padding-block:4px 6px;}
+#topbar img{width:44px; height:44px; border-radius:50%; border:1px solid var(--border); object-fit:cover; flex-shrink:0;}
+#topbar h1{margin:0; font-size:1.2rem; font-weight:700;}
+#topbar p{margin:2px 0 0; font-size:0.78rem; color:var(--muted);}
+#flag-strip{height:4px; display:flex; margin:10px 0 18px; border-radius:2px; overflow:hidden;}
+#flag-strip span{flex:1;}
+#flag-strip span:nth-child(1){background:var(--dz-green);}
+#flag-strip span:nth-child(2){background:var(--surface); border-block:1px solid var(--border);}
+#flag-strip span:nth-child(3){background:var(--dz-red);}
+
+.stats{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;}
+.stat{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; flex:1; min-width:110px;}
+.stat .n{font-size:1.25rem; font-weight:700; font-variant-numeric:tabular-nums;}
+.stat .l{font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
+
+.tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:18px;}
+.tab-btn{
+  background:none; border:none; font-family:inherit; font-size:0.92rem; font-weight:600; color:var(--muted);
+  padding:9px 16px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;
+}
+.tab-btn.active{color:var(--dz-green); border-bottom-color:var(--dz-green);}
+.tab-btn:focus-visible{outline:2px solid var(--dz-gold); outline-offset:2px;}
+.panel[hidden]{display:none;}
+
+/* ---- Disagreements tab ---- */
+.progress-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+.progress-track{flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden;}
+.progress-fill{height:100%; background:var(--dz-green); transition:width .25s;}
+.progress-label{font-size:0.82rem; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums;}
+
+.card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px;}
+.card-text{font-size:1.15rem; line-height:1.6; margin-bottom:14px; word-wrap:break-word;}
+.votes-row{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;}
+.chip{
+  font-size:0.76rem; font-weight:600; padding:3px 10px; border-radius:999px; color:#fff;
+  display:inline-flex; align-items:center; gap:4px;
+}
+.label-btns{display:flex; gap:8px; flex-wrap:wrap;}
+.label-btn{
+  font-family:inherit; font-size:0.88rem; font-weight:600; border:1.5px solid var(--border); background:var(--bg);
+  color:var(--ink); border-radius:9px; padding:9px 14px; cursor:pointer; display:flex; align-items:center; gap:7px;
+}
+.label-btn kbd{
+  font-size:0.7rem; background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:1px 5px;
+  color:var(--muted); font-family:inherit;
+}
+.label-btn:hover{border-color:var(--dz-green);}
+.label-btn:focus-visible{outline:2px solid var(--dz-gold); outline-offset:1px;}
+.label-btn.selected{background:var(--dz-green); border-color:var(--dz-green); color:#fff;}
+.label-btn.selected kbd{background:rgba(255,255,255,.2); border-color:transparent; color:#fff;}
+
+.nav-row{display:flex; justify-content:space-between; gap:10px; margin-top:16px;}
+.ghost-btn{
+  font-family:inherit; font-size:0.85rem; font-weight:600; background:none; border:1.5px solid var(--border);
+  color:var(--muted); border-radius:8px; padding:7px 14px; cursor:pointer;
+}
+.ghost-btn:hover{border-color:var(--dz-green); color:var(--dz-green);}
+.done-banner{
+  text-align:center; padding:36px 20px; background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  color:var(--muted);
+}
+.done-banner strong{color:var(--dz-green); display:block; font-size:1.1rem; margin-bottom:6px;}
+
+.reviewed-list{margin-top:22px;}
+.reviewed-list h3{font-size:0.82rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0 0 8px;}
+.reviewed-row{
+  display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:0.85rem;
+}
+.reviewed-row .txt{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.reviewed-row .lab{font-weight:700; font-size:0.76rem;}
+.reviewed-row button{
+  font-family:inherit; font-size:0.74rem; background:none; border:none; color:var(--muted); cursor:pointer;
+  text-decoration:underline;
+}
+
+/* ---- Browse tab ---- */
+.filters{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+.filters select{
+  font-family:inherit; font-size:0.85rem; background:var(--surface); color:var(--ink); border:1.5px solid var(--border);
+  border-radius:8px; padding:7px 10px;
+}
+.browse-row{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.browse-row .top{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.browse-row .txt{font-size:0.98rem; line-height:1.5; flex:1;}
+.meta-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:0.74rem; color:var(--muted);}
+.tag{background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:2px 9px;}
+.correct-btn{
+  font-family:inherit; font-size:0.76rem; font-weight:600; background:none; border:1px solid var(--border);
+  color:var(--muted); border-radius:7px; padding:4px 10px; cursor:pointer; white-space:nowrap;
+}
+.correct-btn:hover{border-color:var(--dz-gold); color:var(--dz-gold);}
+.correction-panel{
+  display:flex; gap:6px; flex-wrap:wrap; padding-top:8px; border-top:1px dashed var(--border);
+}
+.corrected-note{font-size:0.76rem; color:var(--dz-gold); font-weight:600;}
+.load-more{
+  display:block; margin:14px auto; font-family:inherit; font-size:0.88rem; font-weight:600; background:var(--dz-green);
+  color:#fff; border:none; border-radius:9px; padding:10px 20px; cursor:pointer;
+}
+.load-more:hover{background:var(--dz-green-dark);}
+.load-more[hidden]{display:none;}
+.empty-note{text-align:center; color:var(--muted); padding:24px; font-size:0.9rem;}
+
+/* ---- Human eval tab ---- */
+.reveal-banner{
+  display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; margin-bottom:16px;
+  font-size:0.9rem; font-weight:600;
+}
+.reveal-banner.agree{background:rgba(4,102,58,.1); color:var(--dz-green-dark);}
+.reveal-banner.disagree{background:rgba(200,16,46,.08); color:var(--dz-red);}
+.results-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:18px;}
+table.cm{border-collapse:collapse; font-size:0.82rem; margin-bottom:18px;}
+table.cm th, table.cm td{border:1px solid var(--border); padding:6px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+table.cm th{background:var(--surface); font-weight:700;}
+table.cm td.diag{background:rgba(4,102,58,.12); font-weight:700;}
+.per-class-row{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:0.86rem;}

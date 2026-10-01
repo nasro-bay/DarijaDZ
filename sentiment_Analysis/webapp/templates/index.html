@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sentiment Annotation Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrap">
+  <div id="topbar">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="DarijaDZ">
+    <div>
+      <h1>Sentiment Annotation Review</h1>
+      <p>DarijaDZ Sentiment_Analysis &mdash; run 1, 10,000 docs, 5-agent labeling (local copy)</p>
+    </div>
+  </div>
+  <div id="flag-strip"><span></span><span></span><span></span></div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="disagree" id="tab-disagree-btn">Disagreements</button>
+    <button class="tab-btn" data-tab="browse" id="tab-browse-btn">Browse &amp; correct</button>
+    <button class="tab-btn" data-tab="humaneval" id="tab-humaneval-btn">Human eval</button>
+  </div>
+
+  <div class="panel" id="panel-disagree"></div>
+  <div class="panel" id="panel-browse" hidden></div>
+  <div class="panel" id="panel-humaneval" hidden></div>
+</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
